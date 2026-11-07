@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10131b">
+<title>スマスロ Vivy 設定判別・小役カウンター</title>
+<style>
+:root{color-scheme:dark;--bg:#10131b;--panel:#1a2030;--panel2:#222b3e;--line:#34415a;--text:#edf2ff;--muted:#9eabc4;--accent:#8b9cff;--green:#6ee7b7;--yellow:#f6d365;--red:#ff8585}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2540 0,#10131b 55%);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:24px 16px 14px;max-width:1000px;margin:auto}h1{font-size:clamp(22px,4vw,32px);margin:0 0 5px}header p{margin:0;color:var(--muted)}
+main{max-width:1000px;margin:auto;padding:0 14px 50px}.tabs{display:flex;gap:8px;position:sticky;top:0;z-index:5;padding:10px 0;background:#10131bf2;backdrop-filter:blur(12px)}
+.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:11px 14px;border-radius:12px;font-weight:700;cursor:pointer;flex:1}.tab.active{background:var(--accent);border-color:var(--accent);color:#10131b}
+.page{display:none}.page.active{display:block}.card{background:linear-gradient(145deg,var(--panel),#171d2b);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 8px 25px #0002}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:16px 0 8px}.muted,.hint{color:var(--muted)}.hint{font-size:13px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+label{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}input,select{width:100%;background:#111827;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font:inherit}
+button{font:inherit}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:9px 12px;cursor:pointer}.btn.primary{background:var(--accent);color:#11172a;border-color:var(--accent);font-weight:800}.btn.danger{color:#ffaaaa}.btn:active,.counter button:active{transform:scale(.97)}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#111827;border:1px solid var(--line);border-radius:12px;padding:11px;text-align:center}.stat b{display:block;font-size:20px}.stat small{color:var(--muted)}
+.counter-list{display:grid;gap:9px}.counter{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;background:#111827;border:1px solid var(--line);border-radius:12px;padding:10px}.counter .name{font-weight:700}.counter .rate{font-size:12px;color:var(--muted)}.counter .count{min-width:42px;text-align:center;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}.counter button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:20px;cursor:pointer}.counter button.plus{background:#35456b;border-color:#536a9f}
+.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:600}
+.resultbar{height:9px;border-radius:20px;background:#30394d;overflow:hidden;margin-top:5px}.resultbar span{display:block;height:100%;background:linear-gradient(90deg,#7e8cff,#75e0c0)}
+.settingrow{display:grid;grid-template-columns:48px 1fr 48px;gap:10px;align-items:center;margin:9px 0}.settingrow b{text-align:center}.settingrow .pct{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:3px 8px;border-radius:99px;background:#303b54;color:#cbd6f4;font-size:12px;margin:2px}.notice{border-left:3px solid var(--yellow);padding:9px 12px;background:#302b20;border-radius:7px;color:#f5e7bd;font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.hidden{display:none!important}.fieldrow{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.fieldrow>div{flex:1;min-width:120px}
+@media(max-width:560px){.counter{grid-template-columns:minmax(0,1fr) auto auto auto}.counter .name{font-size:14px}.counter .count{min-width:28px}.counter button{width:34px;height:36px}.statgrid{grid-template-columns:repeat(3,1fr)}.stat b{font-size:17px}}
+</style>
+</head>
+<body>
+<header><h1>スマスロ Vivy</h1><p>設定判別 ＋ 小役カウンター</p></header>
+<main>
+<nav class="tabs">
+<button class="tab active" data-tab="judge">設定判別</button>
+<button class="tab" data-tab="roles">小役カウント</button>
+<button class="tab" data-tab="record">実戦記録</button>
+</nav>
+<section id="judge" class="page active">
+<div class="card">
+<h2>実戦データ</h2>
+<div class="grid">
+<div><label>通常時ゲーム数</label><input id="normalG" type="number" min="0" value="0"></div>
+<div><label>AT初当たり回数</label><input id="atHits" type="number" min="0" value="0"></div>
+<div><label>AT中ゲーム数（任意）</label><input id="atG" type="number" min="0" value="0"></div>
+</div>
+<p class="hint">通常時ゲーム数とAT初当たりから、公開されている初当たり確率を使って参考値を計算します。</p>
+</div>
+<div class="card">
+<h2>設定示唆・確定系</h2>
+<div class="grid">
+<div><label>コイン表示「411」回数（設定4以上）</label><input id="coin411" type="number" min="0" value="0"></div>
+<div><label>コイン表示「619」回数（設定6）</label><input id="coin619" type="number" min="0" value="0"></div>
+<div><label>コイン表示「2161」回数</label><input id="coin2161" type="number" min="0" value="0"></div>
+<div><label>エンディング中キャラ同時出現数：2人</label><input id="end2" type="number" min="0" value="0"></div>
+<div><label>同時出現数：3人</label><input id="end3" type="number" min="0" value="0"></div>
+<div><label>同時出現数：4人</label><input id="end4" type="number" min="0" value="0"></div>
+<div><label>同時出現数：5人</label><input id="end5" type="number" min="0" value="0"></div>
+<div><label>同時出現数：6人</label><input id="end6" type="number" min="0" value="0"></div>
+</div>
+<h3>エンディング中の単独キャラ</h3>
+<div class="grid">
+<div><label>エリザベス</label><input id="elizabeth" type="number" min="0" value="0"></div>
+<div><label>エステラ</label><input id="estella" type="number" min="0" value="0"></div>
+<div><label>グレイス</label><input id="grace" type="number" min="0" value="0"></div>
+<div><label>オフィーリア</label><input id="ophelia" type="number" min="0" value="0"></div>
+<div><label>マツモト</label><input id="matsumoto" type="number" min="0" value="0"></div>
+</div>
+<p class="hint">「2161」は2回で設定5以上、3回で設定6。キャラ単独出現は設定ごとの出現率を使った参考判定です。</p>
+</div>
+<div class="card">
+<h2>設定推測（参考）</h2>
+<div class="statgrid">
+<div class="stat"><small>初当たり</small><b id="observedAt">—</b><small>実測確率</small></div>
+<div class="stat"><small>判別対象</small><b id="evidenceCount">0</b><small>入力した示唆</small></div>
+<div class="stat"><small>最高候補</small><b id="topSetting">—</b><small>確率ベース</small></div>
+</div>
+<div id="settingResults" style="margin-top:14px"></div>
+<div id="hardEvidence" class="notice" style="margin-top:14px">確定系・否定系の示唆は、入力すると候補設定に反映されます。</div>
+</div>
+<div class="card">
+<h2>設定別 AT初当たり確率</h2>
+<div class="tablewrap"><table><thead><tr><th>設定</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody><tr><td>AT初当たり</td><td>1/276.5</td><td>1/251.7</td><td>1/272.1</td><td>1/222.8</td><td>1/235.9</td><td>1/210.3</td></tr></tbody></table></div>
+<p class="hint">設定3と設定1、設定5と設定2のように数値が単純な階段状ではありません。初当たり単独で決め打ちしないでください。</p>
+</div>
+</section>
+<section id="roles" class="page">
+<div class="card">
+<h2>小役カウンター</h2>
+<div class="fieldrow">
+<div><label>カウント区分</label><select id="roleMode"><option value="normal">通常時</option><option value="at">AT中</option></select></div>
+<div><label>ゲーム数（分母）</label><input id="roleGames" type="number" min="0" value="0"></div>
+</div>
+<p class="hint">通常時・AT中は別々に保存します。高確率中や役変換高確中など、通常と確率が異なる区間は混ぜずにカウントしてください。</p>
+<div class="actions"><button class="btn" id="addGame">ゲーム数 +1</button><button class="btn" id="removeGame">ゲーム数 −1</button><button class="btn" id="resetRole">この区分をリセット</button></div>
+</div>
+<div class="card"><h2>小役カウント</h2><div id="counterList" class="counter-list"></div></div>
+<div class="card">
+<h2>カウント結果</h2><div class="statgrid">
+<div class="stat"><small>ゲーム数</small><b id="roleGameSummary">0</b><small>G</small></div>
+<div class="stat"><small>カウント合計</small><b id="roleHitSummary">0</b><small>回</small></div>
+<div class="stat"><small>小役合算</small><b id="roleCombined">—</b><small>確率</small></div>
+</div>
+<p class="hint">各小役の実測確率を一覧に表示します。設定判別タブの設定推測へは自動連携しません。</p>
+</div>
+<div class="card">
+<h2>参考値（通常時の公表値）</h2>
+<div class="tablewrap"><table><thead><tr><th>小役</th><th>公表値</th><th>メモ</th></tr></thead><tbody>
+<tr><td>共通ベル</td><td>1/14.8</td><td>設定差未確認</td></tr><tr><td>通常リプレイ</td><td>1/17.7</td><td></td></tr><tr><td>変換リプレイ</td><td>1/67.4</td><td></td></tr><tr><td>中段ベル</td><td>1/1310.7</td><td></td></tr><tr><td>弱チェリー</td><td>設定1：1/72.8<br>設定6：1/62.4</td><td>中間設定値は未掲載</td></tr><tr><td>強チェリー</td><td>1/399.6</td><td></td></tr><tr><td>弱スイカ</td><td>1/65.5</td><td></td></tr><tr><td>強スイカ</td><td>1/1024.0</td><td></td></tr><tr><td>チャンス目</td><td>1/399.6</td><td></td></tr><tr><td>バグ目</td><td>1/2520.6</td><td></td></tr><tr><td>確定役</td><td>1/16384.0</td><td></td></tr><tr><td>マツモト揃い合算</td><td>1/119.4</td><td>共通1/199.8・押し順1/296.8</td></tr>
+</tbody></table></div>
+<p class="hint">公表値は通常時の参考値です。AT中・役変換高確中の確率として流用しないでください。</p>
+</div>
+</section>
+<section id="record" class="page">
+<div class="card">
+<h2>実戦記録</h2>
+<div class="grid">
+<div><label>日付</label><input id="playDate" type="date"></div>
+<div><label>店舗・台番号など</label><input id="memo" placeholder="例：○○店 123番台"></div>
+</div>
+<div class="actions"><button class="btn primary" id="saveRecord">現在の内容を保存</button><button class="btn" id="exportData">JSONバックアップ</button><button class="btn" id="importButton">JSON復元</button><input id="importFile" type="file" accept="application/json" class="hidden"></div>
+<h3>保存済み記録</h3><div id="records"></div>
+</div>
+<div class="card">
+<h2>データ管理</h2>
+<p class="hint">入力内容はこのブラウザ内に保存されます。別の端末・ブラウザには自動共有されません。定期的にJSONバックアップを保存してください。</p>
+<div class="actions"><button class="btn danger" id="clearAll">全データを削除</button></div>
+</div>
+</section>
+<footer class="hint" style="text-align:center;padding:20px 0">Vivy 設定判別・小役カウンター / 公開解析値をもとにした参考ツール</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const keys=['normalG','atHits','atG','coin411','coin619','coin2161','end2','end3','end4','end5','end6','elizabeth','estella','grace','ophelia','matsumoto'];
+const roleDefs=[['共通ベル',14.8],['通常リプレイ',17.7],['変換リプレイ',67.4],['中段ベル',1310.7],['弱チェリー',null],['強チェリー',399.6],['弱スイカ',65.5],['強スイカ',1024],['チャンス目',399.6],['バグ目',2520.6],['確定役',16384],['マツモト揃い（共通）',199.8],['マツモト揃い（押し順）',296.8]];
+let data=JSON.parse(localStorage.getItem('vivyToolData')||'null')||{roles:{normal:{games:0,counts:{}},at:{games:0,counts:{}}},records:[]};
+const save=()=>localStorage.setItem('vivyToolData',JSON.stringify(data));
+function val(id){return Math.max(0,Number($(id).value)||0)}
+function initInputs(){keys.forEach(k=>{const el=$(k);el.value=data.inputs?.[k]??0;el.addEventListener('input',()=>{data.inputs=data.inputs||{};data.inputs[k]=val(k);save();calc()})});$('playDate').value=new Date().toISOString().slice(0,10)}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='roles')renderRoles();if(b.dataset.tab==='record')renderRecords()}));
+const atOdds=[276.5,251.7,272.1,222.8,235.9,210.3];
+const charOdds={elizabeth:[16.7,24.8,14.5,14.4,14.4,14.4],estella:[16.7,14.5,24.8,14.8,14.4,14.4],grace:[16.7,14.5,14.5,24.7,14.4,14.4],ophelia:[16.7,14.5,14.5,14.4,24.7,14.4],matsumoto:[16.7,14.5,14.5,14,14.4,24.7]};
+function calc(){
+ let n=val('normalG'),h=val('atHits'),p=h&&n? n/h:null;$('observedAt').textContent=p?'1/'+p.toFixed(1):'—';
+ let scores=atOdds.map((odds,i)=>{let s=0;if(n>0){let rate=1/odds, obs=h/n;s+=h*Math.log(rate)-n*rate}return s});
+ let totalChars=Object.keys(charOdds).reduce((a,k)=>a+val(k),0);
+ Object.keys(charOdds).forEach(k=>{let c=val(k);if(c)charOdds[k].forEach((pct,i)=>scores[i]+=c*Math.log(pct/100))});
+ let evidence=0;for(const id of ['coin411','coin619','coin2161','end2','end3','end4','end5','end6'])evidence+=val(id);
+ for(const k of Object.keys(charOdds))evidence+=val(k);
+ let min=[1,1,1,1,1,1],why=[];
+ if(val('coin411')){min=[4,4,4,4,4,4];why.push('411：設定4以上')}
+ if(val('coin619')){min=[6,6,6,6,6,6];why.push('619：設定6')}
+ if(val('coin2161')>=3){min=[6,6,6,6,6,6];why.push('2161が3回：設定6')}
+ else if(val('coin2161')>=2){min=[5,5,5,5,5,5];why.push('2161が2回：設定5以上')}
+ else if(val('coin2161')>=1){min=[4,4,4,4,4,4];why.push('2161：設定4以上')}
+ [['end2',2],['end3',3],['end4',4],['end5',5],['end6',6]].forEach(([id,m])=>{if(val(id)) {min=min.map(x=>Math.max(x,m));why.push('同時'+m+'人：設定'+m+'以上')}});
+ scores=scores.map((s,i)=>i+1<min[i]?-Infinity:s);
+ let finite=scores.filter(Number.isFinite),max=finite.length?Math.max(...finite):0,weights=scores.map(s=>Number.isFinite(s)?Math.exp(s-max):0),sum=weights.reduce((a,b)=>a+b,0);
+ let html='';weights.forEach((w,i)=>{let pct=sum?100*w/sum:0;html+='<div class="settingrow"><b>設定'+(i+1)+'</b><div><div class="resultbar"><span style="width:'+pct.toFixed(1)+'%"></span></div></div><div class="pct">'+pct.toFixed(1)+'%</div></div>'});
+ $('settingResults').innerHTML=html||'有効な候補がありません';$('evidenceCount').textContent=evidence;$('topSetting').textContent=sum?'設定'+(weights.indexOf(Math.max(...weights))+1):'—';
+ $('hardEvidence').textContent=why.length?why.join(' ／ '):'確定系・確定示唆の入力はありません。なお、示唆イベントの前提条件・解析情報を確認したうえで入力してください。';
+}
+function activeRole(){return data.roles[$('roleMode').value]}
+function renderRoles(){
+ let r=activeRole();$('roleGames').value=r.games;
+ $('counterList').innerHTML=roleDefs.map(([name,odds],i)=>{let c=r.counts[i]||0,rate=c&&r.games?'1/'+(r.games/c).toFixed(1):'—';let ref=odds?'公表値 1/'+odds:'設定1 1/72.8 ・ 設定6 1/62.4';return '<div class="counter"><div><div class="name">'+name+'</div><div class="rate">'+ref+'　/　実測 '+rate+'</div></div><button data-minus="'+i+'">−</button><div class="count">'+c+'</div><button class="plus" data-plus="'+i+'">＋</button></div>'}).join('');
+ $('roleGames').onchange=()=>{r.games=Math.max(0,Number($('roleGames').value)||0);save();renderRoles()};
+ $('counterList').querySelectorAll('[data-plus]').forEach(b=>b.onclick=()=>{let i=b.dataset.plus;r.counts[i]=(r.counts[i]||0)+1;save();renderRoles()});
+ $('counterList').querySelectorAll('[data-minus]').forEach(b=>b.onclick=()=>{let i=b.dataset.minus;r.counts[i]=Math.max(0,(r.counts[i]||0)-1);save();renderRoles()});
+ let hits=Object.values(r.counts).reduce((a,b)=>a+b,0);$('roleGameSummary').textContent=r.games.toLocaleString();$('roleHitSummary').textContent=hits.toLocaleString();$('roleCombined').textContent=hits&&r.games?'1/'+(r.games/hits).toFixed(1):'—';
+}
+$('roleMode').addEventListener('change',renderRoles);
+$('addGame').onclick=()=>{let r=activeRole();r.games++;save();renderRoles()};
+$('removeGame').onclick=()=>{let r=activeRole();r.games=Math.max(0,r.games-1);save();renderRoles()};
+$('resetRole').onclick=()=>{if(confirm('この区分の小役カウントとゲーム数をリセットしますか？')){data.roles[$('roleMode').value]={games:0,counts:{}};save();renderRoles()}};
+function snapshot(){let inputs={};keys.forEach(k=>inputs[k]=val(k));return {date:$('playDate').value,memo:$('memo').value,inputs,roles:JSON.parse(JSON.stringify(data.roles)),savedAt:new Date().toISOString()}}
+$('saveRecord').onclick=()=>{data.records.unshift(snapshot());save();renderRecords();alert('実戦記録を保存しました')};
+function renderRecords(){$('records').innerHTML=data.records.length?data.records.map((r,i)=>'<div class="card"><b>'+r.date+'</b>　'+(r.memo||'メモなし')+'<div class="hint">通常 '+(r.inputs.normalG||0)+'G / AT初当たり '+(r.inputs.atHits||0)+'回</div><button class="btn danger" data-del="'+i+'">削除</button></div>').join(''):'<p class="muted">保存済みの記録はありません。</p>';$('records').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{data.records.splice(Number(b.dataset.del),1);save();renderRecords()})}
+$('exportData').onclick=()=>{let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vivy-hanbetsu-backup.json';a.click();URL.revokeObjectURL(a.href)};
+$('importButton').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{try{let obj=JSON.parse(await e.target.files[0].text());if(!obj.roles||!Array.isArray(obj.records))throw Error();data=obj;save();location.reload()}catch(err){alert('JSONを読み込めませんでした。バックアップファイルを確認してください。')}};
+$('clearAll').onclick=()=>{if(confirm('すべての実戦データを削除します。この操作は取り消せません。')){localStorage.removeItem('vivyToolData');location.reload()}};
+initInputs();$('roleMode').value='normal';renderRoles();calc();
+</script>
+</body></html>
